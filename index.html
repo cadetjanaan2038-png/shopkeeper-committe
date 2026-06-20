@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Chanda Register — Fund Collection Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;700&family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --desk: #2a2622;
+    --paper: #eef0dd;
+    --paper-bright: #fbfbf2;
+    --paper-line: #c7cda9;
+    --margin-red: #a4243b;
+    --ink: #1f2a3a;
+    --ink-soft: #5a6273;
+    --stamp-red: #a4243b;
+    --stamp-green: #2f6b4f;
+    --radius: 6px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--desk);
+    background-image:
+      radial-gradient(ellipse at top, rgba(255,255,255,0.04), transparent 60%);
+    font-family: 'Inter', sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+    padding: 28px 14px 60px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .register {
+    position: relative;
+    width: 100%;
+    max-width: 740px;
+    background: var(--paper);
+    border-radius: var(--radius);
+    box-shadow: 0 18px 40px rgba(0,0,0,0.45), 0 2px 0 rgba(255,255,255,0.06) inset;
+    padding: 36px 32px 28px 64px;
+    overflow: hidden;
+  }
+
+  .register::before {
+    content: "";
+    position: absolute;
+    top: 0; bottom: 0; left: 40px;
+    width: 1px;
+    background: var(--margin-red);
+    opacity: 0.55;
+  }
+
+  .register__header {
+    margin-bottom: 22px;
+  }
+
+  .register__header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .register__eyebrow {
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--margin-red);
+    margin: 0 0 6px;
+  }
+
+  .register__title {
+    font-family: 'Zilla Slab', serif;
+    font-weight: 700;
+    font-size: 34px;
+    margin: 0 0 8px;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+
+  .register__goal {
+    font-family: 'Courier Prime', monospace;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .admin-toggle {
+    flex-shrink: 0;
+    font-family: 'Courier Prime', monospace;
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    padding: 7px 13px;
+    border-radius: 20px;
+    border: 1px solid var(--paper-line);
+    background: var(--paper-bright);
+    color: var(--ink-soft);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+  }
+  .admin-toggle:hover { border-color: var(--margin-red); color: var(--margin-red); }
+  .admin-toggle--active {
+    border-color: var(--stamp-green);
+    color: var(--stamp-green);
+    background: rgba(47,107,79,0.08);
+  }
+  .admin-toggle--active:hover { border-color: var(--stamp-green); color: var(--stamp-green); }
+  .admin-toggle:focus-visible { outline: 2px solid var(--margin-red); outline-offset: 1px; }
+
+  .stamp-wrap {
+    display: flex;
+    justify-content: center;
+    margin: 18px 0 24px;
+  }
+
+  .stamp {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 18px 30px;
+    border: 3px double var(--stamp-red);
+    border-radius: 50% / 38%;
+    color: var(--stamp-red);
+    transform: rotate(-4deg);
+    transition: color 0.4s ease, border-color 0.4s ease, transform 0.4s ease;
+    background: rgba(164,36,59,0.04);
+  }
+
+  .stamp--complete {
+    color: var(--stamp-green);
+    border-color: var(--stamp-green);
+    background: rgba(47,107,79,0.06);
+    transform: rotate(3deg) scale(1.04);
+  }
+
+  .stamp__pct {
+    font-family: 'Courier Prime', monospace;
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: 0.02em;
+  }
+
+  .stamp__amount {
+    font-family: 'Courier Prime', monospace;
+    font-size: 14px;
+  }
+
+  .stamp__label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .stamp, .admin-toggle { transition: none; }
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+
+  .stats__item {
+    text-align: center;
+    padding: 10px 4px;
+    border-top: 1px solid var(--paper-line);
+    border-bottom: 1px solid var(--paper-line);
+  }
+
+  .stats__num {
+    display: block;
+    font-family: 'Courier Prime', monospace;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--ink);
+  }
+
+  .stats__label {
+    display: block;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 3px;
+  }
+
+  .stats__note {
+    text-align: center;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin: 8px 0 18px;
+  }
+
+  .payment-info {
+    background: var(--paper-bright);
+    border: 1px solid var(--paper-line);
+    border-radius: var(--radius);
+    padding: 14px 15px;
+    margin-bottom: 26px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .payment-info strong {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--ink);
+  }
+
+  .contributor-block {
+    margin-bottom: 26px;
+  }
+
+  .viewer-note {
+    text-align: center;
+    font-family: 'Courier Prime', monospace;
+    font-size: 12px;
+    color: var(--ink-soft);
+    background: var(--paper-bright);
+    border: 1px dashed var(--paper-line);
+    border-radius: var(--radius);
+    padding: 13px 14px;
+    margin: 0;
+  }
+
+  .entry-form {
+    background: var(--paper-bright);
+    border: 1px solid var(--paper-line);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 26px;
+  }
+
+  .entry-form__row {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr 1.2fr auto;
+    gap: 10px;
+    align-items: end;
+  }
+
+  .entry-form label {
+    display: flex;
+    flex-direction: column;
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    gap: 5px;
+  }
+
+  .entry-form input {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 9px 10px;
+    border: 1px solid var(--paper-line);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--ink);
+  }
+
+  .entry-form input:focus-visible,
+  .btn:focus-visible {
+    outline: 2px solid var(--stamp-red);
+    outline-offset: 1px;
+  }
+
+  .btn {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    border-radius: 4px;
+    border: none;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+  }
+  .btn:hover { opacity: 0.85; }
+
+  .btn--primary {
+    background: var(--margin-red);
+    color: #fff;
+  }
+
+  .btn--ghost {
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--paper-line);
+  }
+
+  .ledger {
+    background: var(--paper-bright);
+    border: 1px solid var(--paper-line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .ledger__head,
+  .ledger__row {
+    display: grid;
+    grid-template-columns: 36px 100px 1fr 110px 60px;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 14px;
+  }
+
+  .ledger--viewer .ledger__head,
+  .ledger--viewer .ledger__row {
+    grid-template-columns: 36px 100px 1fr 110px;
+  }
+  .ledger--viewer .ledger__head span:last-child { display: none; }
+
+  .ledger__head {
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--paper-line);
+  }
+
+  .ledger__body {
+    max-height: 360px;
+    overflow-y: auto;
+  }
+
+  .ledger__row {
+    font-family: 'Courier Prime', monospace;
+    font-size: 13px;
+    border-bottom: 1px solid var(--paper-line);
+  }
+  .ledger__row:last-child { border-bottom: none; }
+  .ledger__row:nth-child(even) { background: rgba(199,205,169,0.18); }
+
+  .ledger__num { color: var(--ink-soft); }
+  .ledger__date { color: var(--ink-soft); }
+  .ledger__name {
+    font-family: 'Inter', sans-serif;
+    font-size: 13.5px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ledger__amount { font-weight: 700; }
+
+  .ledger__edit,
+  .ledger__delete {
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+  .ledger__edit:hover { color: var(--ink); background: rgba(31,42,58,0.08); }
+  .ledger__delete:hover { color: var(--margin-red); background: rgba(164,36,59,0.08); }
+
+  .ledger__empty {
+    text-align: center;
+    padding: 28px 14px;
+    color: var(--ink-soft);
+    font-size: 13.5px;
+    display: none;
+  }
+
+  .footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 18, 16, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 30;
+  }
+
+  .modal {
+    width: 100%;
+    max-width: 320px;
+    background: var(--paper-bright);
+    border-radius: var(--radius);
+    border: 1px solid var(--paper-line);
+    padding: 22px 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+  }
+
+  .modal__title {
+    font-family: 'Zilla Slab', serif;
+    font-size: 20px;
+    margin: 0 0 6px;
+    color: var(--ink);
+  }
+
+  .modal__sub {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin: 0 0 14px;
+  }
+
+  .modal__input {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 9px 10px;
+    border: 1px solid var(--paper-line);
+    border-radius: 4px;
+    background: #fff;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .modal__error {
+    font-size: 12px;
+    color: var(--margin-red);
+    margin: 0 0 10px;
+  }
+
+  .modal__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 6px;
+  }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 10;
+  }
+  .toast--visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+    pointer-events: auto;
+  }
+  .toast button {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .toast button:hover { background: rgba(255,255,255,0.28); }
+
+  .loading {
+    text-align: center;
+    padding: 60px 0;
+    color: var(--ink-soft);
+    font-family: 'Courier Prime', monospace;
+    font-size: 13px;
+  }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 600px) {
+    .register { padding: 28px 18px 24px 46px; }
+    .register::before { left: 26px; }
+    .register__title { font-size: 27px; }
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .entry-form__row { grid-template-columns: 1fr; }
+    .ledger__head, .ledger__row { grid-template-columns: 26px 78px 1fr 88px 50px; font-size: 12px; }
+    .ledger--viewer .ledger__head, .ledger--viewer .ledger__row { grid-template-columns: 26px 78px 1fr 88px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="register">
+  <header class="register__header">
+    <div class="register__header-row">
+      <div>
+        <p class="register__eyebrow">Community Fund Ledger</p>
+        <h1 class="register__title">Chanda Register</h1>
+        <p class="register__goal">Goal: Rs. 1,000,000 &middot; Rs. 500 per person &middot; 6 month window</p>
+      </div>
+      <button class="admin-toggle" id="adminToggle" type="button">🔒 Admin</button>
+    </div>
+  </header>
+
+  <div id="loadingState" class="loading">Opening the ledger…</div>
+
+  <div id="mainContent" class="hidden">
+    <div class="stamp-wrap">
+      <div class="stamp" id="stamp">
+        <span class="stamp__pct" id="stampPct">0%</span>
+        <span class="stamp__amount" id="stampAmount">Rs. 0</span>
+        <span class="stamp__label" id="stampLabel">Collected</span>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stats__item">
+        <span class="stats__num" id="statContributors">0</span>
+        <span class="stats__label">Contributors</span>
+      </div>
+      <div class="stats__item">
+        <span class="stats__num" id="statAvg">Rs. 0</span>
+        <span class="stats__label">Avg. gift</span>
+      </div>
+      <div class="stats__item">
+        <span class="stats__num" id="statDays">182</span>
+        <span class="stats__label">Days left</span>
+      </div>
+      <div class="stats__item">
+        <span class="stats__num" id="statNeeded">2,000</span>
+        <span class="stats__label">More needed*</span>
+      </div>
+    </div>
+    <p class="stats__note">*estimated at Rs. 500 average, to close the remaining gap</p>
+
+    <div class="payment-info">
+      <strong>Payment Methods:</strong>
+      Easypaisa: 03xx-xxxxxxx (Name: XXXXX)<br>
+      JazzCash: 03xx-xxxxxxx (Name: XXXXX)
+    </div>
+
+    <!-- Admin-only: add entries -->
+    <form class="entry-form hidden" id="entryForm">
+      <div class="entry-form__row">
+        <label>Name
+          <input type="text" id="nameInput" placeholder="Ahmed Khan" />
+        </label>
+        <label>Amount (Rs.)
+          <input type="number" id="amountInput" value="500" min="1" step="1" />
+        </label>
+        <label>Date
+          <input type="date" id="dateInput" />
+        </label>
+        <button type="submit" class="btn btn--primary">Add entry</button>
+      </div>
+    </form>
+
+    <!-- Everyone else: view only -->
+    <div class="contributor-block" id="contributorBlock">
+      <p class="viewer-note">
+        This ledger is view-only. Only the administrator can add, edit, or remove entries.
+      </p>
+    </div>
+
+    <div class="ledger" id="ledger">
+      <div class="ledger__head">
+        <span>#</span><span>Date</span><span>Name</span><span>Amount</span><span></span>
+      </div>
+      <div class="ledger__body" id="ledgerBody"></div>
+      <p class="ledger__empty" id="ledgerEmpty">No entries yet — add the first contribution above.</p>
+    </div>
+
+    <div class="footer-actions hidden" id="footerActions">
+      <button class="btn btn--ghost" id="resetBtn" type="button">Clear all entries</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="loginOverlay">
+  <div class="modal">
+    <h2 class="modal__title">Admin login</h2>
+    <p class="modal__sub">Enter the admin password to add or remove entries.</p>
+    <input type="password" id="passwordInput" class="modal__input" placeholder="Password" autocomplete="off" />
+    <p class="modal__error hidden" id="loginError">Incorrect password.</p>
+    <div class="modal__actions">
+      <button class="btn btn--ghost" id="cancelLogin" type="button">Cancel</button>
+      <button class="btn btn--primary" id="submitLogin" type="button">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  // 🔑 Admin password is stored as a SHA-256 hash, not plain text, so it
+  // isn't readable by anyone who views this page's source.
+  // Default password is "khazanchi786" — CHANGE IT before sharing the link.
+  // To set a new one: open this file in a browser, open the dev console, and run:
+  //   crypto.subtle.digest('SHA-256', new TextEncoder().encode('your-new-password'))
+  //     .then(b => console.log(Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2,'0')).join('')))
+  // then paste the printed value in below.
+  const ADMIN_PASSWORD_HASH = '4d96b5b5ee7800032fe8483e7f5f442cf4068d6355ebc77625841f728ba64be3';
+  const MAX_LOGIN_ATTEMPTS = 5;
+  const LOCKOUT_MS = 30000;
+
+  async function sha256Hex(text) {
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+    return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  const GOAL = 1000000;
+  const PER_PERSON = 500;
+  const STORAGE_KEYS = {
+    entries: 'chanda:entries',   // shared — everyone sees the same ledger
+    settings: 'chanda:settings', // shared — same fundraising start date for all
+    isAdmin: 'chanda:is_admin'   // personal — only this logged-in admin stays unlocked
+  };
+
+  let entries = [];
+  let settings = { startDate: null };
+  let isAdmin = false;
+
+  const loadingState = document.getElementById('loadingState');
+  const mainContent = document.getElementById('mainContent');
+  const stamp = document.getElementById('stamp');
+  const stampPct = document.getElementById('stampPct');
+  const stampAmount = document.getElementById('stampAmount');
+  const stampLabel = document.getElementById('stampLabel');
+  const statContributors = document.getElementById('statContributors');
+  const statAvg = document.getElementById('statAvg');
+  const statDays = document.getElementById('statDays');
+  const statNeeded = document.getElementById('statNeeded');
+  const entryForm = document.getElementById('entryForm');
+  const nameInput = document.getElementById('nameInput');
+  const amountInput = document.getElementById('amountInput');
+  const dateInput = document.getElementById('dateInput');
+  const contributorBlock = document.getElementById('contributorBlock');
+  const ledgerEl = document.getElementById('ledger');
+  const ledgerBody = document.getElementById('ledgerBody');
+  const ledgerEmpty = document.getElementById('ledgerEmpty');
+  const footerActions = document.getElementById('footerActions');
+  const resetBtn = document.getElementById('resetBtn');
+  const toast = document.getElementById('toast');
+
+  const adminToggle = document.getElementById('adminToggle');
+  const loginOverlay = document.getElementById('loginOverlay');
+  const passwordInput = document.getElementById('passwordInput');
+  const loginError = document.getElementById('loginError');
+  const cancelLogin = document.getElementById('cancelLogin');
+  const submitLogin = document.getElementById('submitLogin');
+
+  function todayISO() {
+    return new Date().toISOString().slice(0, 10);
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function formatDate(iso) {
+    const d = new Date(iso);
+    if (isNaN(d)) return iso;
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function fmtRs(n) {
+    return 'Rs. ' + Math.round(n).toLocaleString('en-PK');
+  }
+
+  function daysLeft() {
+    const start = new Date(settings.startDate || todayISO());
+    const deadline = new Date(start);
+    deadline.setMonth(deadline.getMonth() + 6);
+    const today = new Date();
+    const diff = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
+    return Math.max(0, diff);
+  }
+
+  let toastTimeout = null;
+  function showToast(html, autoHideMs) {
+    toast.innerHTML = html;
+    toast.classList.add('toast--visible');
+    clearTimeout(toastTimeout);
+    if (autoHideMs) {
+      toastTimeout = setTimeout(() => toast.classList.remove('toast--visible'), autoHideMs);
+    }
+  }
+  function hideToast() {
+    toast.classList.remove('toast--visible');
+    clearTimeout(toastTimeout);
+  }
+
+  // --- Storage: entries & settings are SHARED so every visitor sees the same ledger ---
+  async function saveEntries() {
+    localStorage.setItem('chanda_entries', JSON.stringify(entries));
+    return true;
+  }
+
+  async function saveSettings() {
+    localStorage.setItem('chanda_settings', JSON.stringify(settings));
+    return true;
+  }
+
+  // Storage calls should never be allowed to hang forever — if the backend
+  // doesn't respond within STORAGE_TIMEOUT_MS, treat it as a failure and
+  // fall through to defaults rather than freezing the page.
+  const STORAGE_TIMEOUT_MS = 5000;
+  function withTimeout(promise, ms) {
+    return Promise.race([
+      promise,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Storage timed out')), ms))
+    ]);
+  }
+
+async function loadData() {
+
+  try {
+
+    const savedEntries = localStorage.getItem('chanda_entries');
+    const savedSettings = localStorage.getItem('chanda_settings');
+    const savedAdmin = localStorage.getItem('chanda_is_admin');
+
+    entries = savedEntries ? JSON.parse(savedEntries) : [];
+
+    settings = savedSettings
+      ? JSON.parse(savedSettings)
+      : { startDate: todayISO() };
+
+    isAdmin = savedAdmin === 'true';
+
+  } catch (err) {
+
+    console.error(err);
+
+    entries = [];
+    settings = { startDate: todayISO() };
+    isAdmin = false;
+  }
+
+  const today = todayISO();
+
+  dateInput.value = today;
+  dateInput.max = today;
+
+  applyAdminState();
+
+  loadingState.classList.add('hidden');
+  mainContent.classList.remove('hidden');
+}
+
+  function applyAdminState() {
+    adminToggle.textContent = isAdmin ? '🔓 Admin · Log out' : '🔒 Admin';
+    adminToggle.classList.toggle('admin-toggle--active', isAdmin);
+    entryForm.classList.toggle('hidden', !isAdmin);
+    contributorBlock.classList.toggle('hidden', isAdmin);
+    footerActions.classList.toggle('hidden', !isAdmin);
+    ledgerEl.classList.toggle('ledger--viewer', !isAdmin);
+    render();
+  }
+
+  function render() {
+    const total = entries.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+    const pct = Math.min(100, Math.round((total / GOAL) * 1000) / 10);
+    const complete = total >= GOAL;
+
+    stampPct.textContent = pct + '%';
+    stampAmount.textContent = fmtRs(total);
+    stampLabel.textContent = complete ? 'Goal complete' : 'Collected';
+    stamp.classList.toggle('stamp--complete', complete);
+
+    statContributors.textContent = entries.length.toLocaleString('en-PK');
+    statAvg.textContent = entries.length ? fmtRs(total / entries.length) : 'Rs. 0';
+    statDays.textContent = daysLeft();
+
+    const remaining = Math.max(0, GOAL - total);
+    statNeeded.textContent = remaining ? Math.ceil(remaining / PER_PERSON).toLocaleString('en-PK') : '0';
+
+    ledgerBody.innerHTML = '';
+    ledgerEmpty.style.display = entries.length ? 'none' : 'block';
+
+    entries.forEach((entry, i) => {
+      const row = document.createElement('div');
+      row.className = 'ledger__row';
+      row.innerHTML =
+        '<span class="ledger__num">' + (entries.length - i) + '</span>' +
+        '<span class="ledger__date">' + formatDate(entry.date) + '</span>' +
+        '<span class="ledger__name">' + escapeHtml(entry.name) + '</span>' +
+        '<span class="ledger__amount">' + fmtRs(entry.amount) + '</span>' +
+        (isAdmin
+          ? '<span>' +
+            '<button class="ledger__edit" data-id="' + entry.id + '" aria-label="Edit">✎</button>' +
+            '<button class="ledger__delete" data-id="' + entry.id + '" aria-label="Remove">✕</button>' +
+            '</span>'
+          : '');
+      ledgerBody.appendChild(row);
+    });
+
+    if (isAdmin) {
+      ledgerBody.querySelectorAll('.ledger__delete').forEach((btn) => {
+        btn.addEventListener('click', () => deleteEntry(btn.getAttribute('data-id')));
+      });
+      ledgerBody.querySelectorAll('.ledger__edit').forEach((btn) => {
+        btn.addEventListener('click', () => editEntry(btn.getAttribute('data-id')));
+      });
+    }
+  }
+
+  async function deleteEntry(id) {
+    if (!isAdmin) return;
+    const idx = entries.findIndex((e) => e.id === id);
+    if (idx === -1) return;
+    const [removed] = entries.splice(idx, 1);
+    render();
+    await saveEntries();
+
+    showToast(
+      'Removed ' + escapeHtml(removed.name) + '\u2019s entry (' + fmtRs(removed.amount) + '). <button id="undoBtn">Undo</button>',
+      6000
+    );
+    const undoBtn = document.getElementById('undoBtn');
+    if (undoBtn) {
+      undoBtn.addEventListener('click', async () => {
+        entries.splice(idx, 0, removed);
+        render();
+        await saveEntries();
+        hideToast();
+      });
+    }
+  }
+
+  async function editEntry(id) {
+    if (!isAdmin) return;
+    const entry = entries.find((e) => e.id === id);
+    if (!entry) return;
+
+    const newName = prompt('Edit name:', entry.name);
+    if (newName === null) return;
+    const newAmount = prompt('Edit amount:', entry.amount);
+    if (newAmount === null) return;
+
+    entry.name = newName.trim() || 'Anonymous';
+    entry.amount = parseFloat(newAmount) || 0;
+    render();
+    await saveEntries();
+    showToast('Entry updated.', 2000);
+  }
+
+  entryForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!isAdmin) return;
+
+    const name = nameInput.value.trim() || 'Anonymous';
+    const amount = parseFloat(amountInput.value);
+    const date = dateInput.value || todayISO();
+
+    if (!amount || amount <= 0) {
+      showToast('Enter an amount greater than zero.', 3000);
+      return;
+    }
+
+    const entry = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+      name,
+      amount,
+      date
+    };
+    entries.unshift(entry);
+    render();
+    await saveEntries();
+
+    entryForm.reset();
+    amountInput.value = PER_PERSON;
+    dateInput.value = todayISO();
+    nameInput.focus();
+  });
+
+  resetBtn.addEventListener('click', async () => {
+    if (!isAdmin || !entries.length) return;
+    if (!confirm('Clear all ' + entries.length + ' entries? This cannot be undone.')) return;
+    entries = [];
+    render();
+    await saveEntries();
+    showToast('All entries cleared.', 2500);
+  });
+
+  // --- Admin login / logout ---
+  let failedAttempts = 0;
+  let lockUntil = 0;
+  let lockInterval = null;
+
+  function updateLockUI() {
+    const remaining = Math.ceil((lockUntil - Date.now()) / 1000);
+    if (remaining <= 0) {
+      clearInterval(lockInterval);
+      lockInterval = null;
+      lockUntil = 0;
+      submitLogin.disabled = false;
+      passwordInput.disabled = false;
+      loginError.classList.add('hidden');
+      return;
+    }
+    submitLogin.disabled = true;
+    passwordInput.disabled = true;
+    loginError.textContent = 'Too many attempts. Try again in ' + remaining + 's.';
+    loginError.classList.remove('hidden');
+  }
+
+  function startLockout() {
+    lockUntil = Date.now() + LOCKOUT_MS;
+    failedAttempts = 0;
+    updateLockUI();
+    clearInterval(lockInterval);
+    lockInterval = setInterval(updateLockUI, 1000);
+  }
+
+  function openLogin() {
+    passwordInput.value = '';
+    loginOverlay.classList.remove('hidden');
+    if (Date.now() < lockUntil) {
+      updateLockUI();
+    } else {
+      loginError.classList.add('hidden');
+      submitLogin.disabled = false;
+      passwordInput.disabled = false;
+    }
+    setTimeout(() => { if (!passwordInput.disabled) passwordInput.focus(); }, 50);
+  }
+  function closeLogin() {
+    loginOverlay.classList.add('hidden');
+  }
+
+  async function attemptLogin() {
+    if (Date.now() < lockUntil) {
+      updateLockUI();
+      return;
+    }
+    if (!window.crypto || !window.crypto.subtle) {
+      loginError.textContent = 'Secure login isn\u2019t supported in this browser.';
+      loginError.classList.remove('hidden');
+      return;
+    }
+
+    const entered = passwordInput.value;
+    let hash;
+    try {
+      hash = await sha256Hex(entered);
+    } catch (err) {
+      console.error('Hashing error:', err);
+      loginError.textContent = 'Login check failed. Please try again.';
+      loginError.classList.remove('hidden');
+      return;
+    }
+
+    if (hash === ADMIN_PASSWORD_HASH) {
+      failedAttempts = 0;
+      isAdmin = true;
+      closeLogin();
+      applyAdminState();
+      try {
+        localStorage.setItem('chanda_is_admin', 'true');
+      } catch (err) {
+        console.error('Storage error (isAdmin):', err);
+      }
+      showToast('Admin mode unlocked.', 2500);
+    } else {
+      failedAttempts += 1;
+      passwordInput.value = '';
+      if (failedAttempts >= MAX_LOGIN_ATTEMPTS) {
+        startLockout();
+      } else {
+        const left = MAX_LOGIN_ATTEMPTS - failedAttempts;
+        loginError.textContent = 'Incorrect password. ' + left + ' attempt' + (left === 1 ? '' : 's') + ' left.';
+        loginError.classList.remove('hidden');
+        passwordInput.focus();
+      }
+    }
+  }
+
+  async function logOut() {
+    isAdmin = false;
+    applyAdminState();
+    try {
+      localStorage.removeItem('chanda_is_admin');
+    } catch (err) {
+      // key may not have existed — fine
+    }
+    showToast('Logged out — now viewing as a contributor.', 2500);
+  }
+
+  adminToggle.addEventListener('click', () => {
+    if (isAdmin) {
+      logOut();
+    } else {
+      openLogin();
+    }
+  });
+  cancelLogin.addEventListener('click', closeLogin);
+  loginOverlay.addEventListener('click', (e) => {
+    if (e.target === loginOverlay) closeLogin();
+  });
+  submitLogin.addEventListener('click', attemptLogin);
+  passwordInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') attemptLogin();
+  });
+
+  loadData();
+  }
+)();
+</script>
+
+</body>
+</html>
